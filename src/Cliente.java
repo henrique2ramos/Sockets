@@ -19,7 +19,7 @@ public class Cliente {
         System.out.println("Conectando ao servidor em " + HOST + ":" + PORTA + "...");
 
         try (Socket socket = new Socket(HOST, PORTA)) {
-            System.out.println("Conectado! Digite comandos (1, 2, 3, 4 para imagem, 0 para sair):");
+            System.out.println("Conectado!");
 
             Thread.ofVirtual().start(() -> ouvirServidor(socket));
 
@@ -27,10 +27,27 @@ public class Cliente {
             Scanner scanner = new Scanner(System.in, StandardCharsets.UTF_8);
 
             while (true) {
+                System.out.println("Escolha a operacao (1: soma, 2: subtracao, 3: multiplicacao, 4: imagem, 0: sair):");
+                if (!scanner.hasNextLine()) {
+                    break;
+                }
                 String comando = scanner.nextLine();
+
                 if ("4".equals(comando)) {
                     String imgB64 = gerarBase64ImagemPequena();
                     writer.println("4;" + imgB64);
+                } else if ("1".equals(comando) || "2".equals(comando) || "3".equals(comando)) {
+                    Double primeiroNumero = lerNumero(scanner, "Digite o primeiro numero: ");
+                    if (primeiroNumero == null) {
+                        break;
+                    }
+
+                    Double segundoNumero = lerNumero(scanner, "Digite o segundo numero: ");
+                    if (segundoNumero == null) {
+                        break;
+                    }
+
+                    writer.println(comando + ";" + primeiroNumero + ";" + segundoNumero);
                 } else {
                     writer.println(comando);
                 }
@@ -42,6 +59,27 @@ public class Cliente {
             }
         } catch (IOException e) {
             System.err.println("Erro na conexao do cliente: " + e.getMessage());
+        }
+    }
+
+    private static Double lerNumero(Scanner scanner, String mensagem) {
+        while (true) {
+            System.out.print(mensagem);
+            if (!scanner.hasNextLine()) {
+                return null;
+            }
+
+            String entrada = scanner.nextLine();
+            try {
+                double numero = Double.parseDouble(entrada);
+                if (Double.isFinite(numero)) {
+                    return numero;
+                }
+            } catch (NumberFormatException ignored) {
+                // Solicita novamente uma entrada numerica valida.
+            }
+
+            System.out.println("Entrada invalida. Digite um numero valido.");
         }
     }
 

@@ -26,13 +26,13 @@ public class ProcessadorComandos {
         try {
             switch (comando) {
                 case "1":
-                    cliente.enviarMensagem("RESPOSTA:+: Operacao 1 executada com sucesso.");
+                    processarOperacao(cliente, partes, "+");
                     break;
                 case "2":
-                    cliente.enviarMensagem("RESPOSTA:-: Operacao 2 executada com sucesso.");
+                    processarOperacao(cliente, partes, "-");
                     break;
                 case "3":
-                    cliente.enviarMensagem("RESPOSTA:x: Operacao 3 executada com sucesso.");
+                    processarOperacao(cliente, partes, "x");
                     break;
                 case "4":
                     String imagemBase64 = partes.length > 1 ? partes[1] : "";
@@ -44,6 +44,33 @@ public class ProcessadorComandos {
             }
         } finally {
             cliente.getLock().unlock();
+        }
+    }
+
+    private static void processarOperacao(ConexaoCliente cliente, String[] partes, String operador) {
+        if (partes.length != 3) {
+            cliente.enviarMensagem("Erro: informe dois numeros para realizar a operacao.");
+            return;
+        }
+
+        try {
+            double primeiroNumero = Double.parseDouble(partes[1]);
+            double segundoNumero = Double.parseDouble(partes[2]);
+            if (!Double.isFinite(primeiroNumero) || !Double.isFinite(segundoNumero)) {
+                cliente.enviarMensagem("Erro: os valores precisam ser numeros validos.");
+                return;
+            }
+
+            double resultado = switch (operador) {
+                case "+" -> primeiroNumero + segundoNumero;
+                case "-" -> primeiroNumero - segundoNumero;
+                case "x" -> primeiroNumero * segundoNumero;
+                default -> throw new IllegalArgumentException("Operador desconhecido: " + operador);
+            };
+            cliente.enviarMensagem("RESPOSTA:" + operador + ": " + primeiroNumero + " "
+                    + operador + " " + segundoNumero + " = " + resultado);
+        } catch (NumberFormatException e) {
+            cliente.enviarMensagem("Erro: os valores precisam ser numeros validos.");
         }
     }
 

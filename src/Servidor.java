@@ -16,7 +16,7 @@ public class Servidor {
     private static final ConcurrentHashMap<String, ConexaoCliente> conexoesAtivas =
             new ConcurrentHashMap<>();
 
-    public static void main(String[] args) {
+            public static void main(String[] args) {
         System.out.println("Iniciando Servidor na porta " + PORTA + " com backlog de " + BACKLOG + "...");
 
         try (ServerSocket serverSocket = new ServerSocket(PORTA, BACKLOG)) {

@@ -21,7 +21,8 @@ public class Cliente {
         try (Socket socket = new Socket(HOST, PORTA)) {
             System.out.println("Conectado!");
 
-            Thread.ofVirtual().start(() -> ouvirServidor(socket));
+            // Inicia uma thread virtual para ouvir as mensagens do servidor
+            Thread tarefaLeitura = Thread.ofVirtual().start(() -> ouvirServidor(socket));
 
             PrintWriter writer = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8), true);
             Scanner scanner = new Scanner(System.in, StandardCharsets.UTF_8);
@@ -54,11 +55,15 @@ public class Cliente {
 
                 if ("0".equals(comando)) {
                     System.out.println("Encerrando cliente...");
+                    tarefaLeitura.join();
                     break;
                 }
             }
         } catch (IOException e) {
             System.err.println("Erro na conexao do cliente: " + e.getMessage());
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            System.err.println("Cliente interrompido.");
         }
     }
 
